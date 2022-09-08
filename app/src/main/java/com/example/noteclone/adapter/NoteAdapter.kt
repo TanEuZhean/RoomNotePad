@@ -60,6 +60,7 @@ class NoteAdapter(var data: MutableList<String>, var viewModel: NoteViewModel, v
 
     inner class NoteViewHolder(private val binding: NoteItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(note: Note) {
+            Log.i("color", note.color)
             binding.sideColor.setBackgroundColor(Color.parseColor(note.color))
             binding.noteTitleTv.text = note.title
             binding.noteTimeTv.text = note.time
@@ -74,7 +75,7 @@ class NoteAdapter(var data: MutableList<String>, var viewModel: NoteViewModel, v
                     .setTitle("Delete Note")
                     .setMessage("Are you sure?")
                     .setPositiveButton(
-                        "Yes", DialogInterface.OnClickListener() { dialogInterface: DialogInterface?, i: Int ->
+                        "Yes", DialogInterface.OnClickListener() { _: DialogInterface?, _: Int ->
                             binding.viewModel = viewModel
                             viewModel.deleteNotes(note.id)
                         }

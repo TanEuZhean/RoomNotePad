@@ -22,6 +22,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteclone.adapter.NoteAdapter
+import com.example.noteclone.database.Injection
 import com.example.noteclone.databinding.ActivityMainBinding
 import com.example.noteclone.viewmodel.NoteViewModel
 import kotlinx.coroutines.launch
@@ -35,10 +36,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
 
-        val sharedPreferences: SharedPreferences = this.getSharedPreferences("notepad", Context.MODE_PRIVATE)!!
+//        val sharedPreferences: SharedPreferences = this.getSharedPreferences("notepad", Context.MODE_PRIVATE)!!
 
         val viewModel : NoteViewModel by viewModels {
-            NoteViewModel.NoteViewModelProvider(sharedPreferences)
+            NoteViewModel.NoteViewModelProvider(Injection.provideNoteRepository(this))
         }
         binding.viewModel = viewModel
 

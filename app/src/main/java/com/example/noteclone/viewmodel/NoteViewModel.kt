@@ -1,144 +1,115 @@
 package com.example.noteclone.viewmodel
 
-import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
 import com.example.noteclone.data.Note
-import com.example.noteclone.data.toNote
+import com.example.noteclone.database.NoteRepository
+import kotlinx.coroutines.launch
 import java.lang.IllegalArgumentException
 import java.time.LocalDate
 
-class NoteViewModel(private val sharedPreferences: SharedPreferences): ViewModel() {
-    val notes : MutableLiveData<MutableList<String>> by lazy {
-        MutableLiveData<MutableList<String>>()
-    }
-    val note : MutableLiveData<Note> by lazy {
-        MutableLiveData<Note>()
-    }
+class NoteViewModel(private val noteRepository: NoteRepository): ViewModel() {
+    val _notes : MutableLiveData<MutableList<String>> = MutableLiveData<MutableList<String>>()
+    val notes : LiveData<MutableList<String>> = _notes
+    val _note : MutableLiveData<Note> = MutableLiveData<Note>()
+    val note : LiveData<Note> = _note
 
     @JvmName("getNotes1")
     fun getNotes() : MutableLiveData<MutableList<String>> {
-        var data = sharedPreferences.getStringSet("note", null)
+//        var data = sharedPreferences.getStringSet("note", null)
+        val res : MutableList<String> = mutableListOf()
+        viewModelScope.launch {
+            val data = noteRepository.getAllNote()?.toMutableList()
 
-        notes.value = data?.toMutableList()
+            for (i in data!!) {
+                res.add(i.toString())
+            }
+        }
+        _notes.value = res
 
-        Log.i("notesVal", notes.value.toString())
+        Log.i("notesVal", _notes.value.toString())
 
-        return notes
+        return _notes
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun addNotes() : MutableList<String> {
-        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
-        var arr :  MutableList<String> = mutableListOf()
+//        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
+        val res : MutableList<String> = mutableListOf()
+        viewModelScope.launch {
+            val data = noteRepository.getAllNote()?.toMutableList()
 
-        if(data.isNullOrEmpty()) {
-            val new = Note(
-                id = 0,
-                title = "New Note",
-                content = "",
-                time = LocalDate.now().toString(),
-                color = "#FFFFFF"
-            )
-
-            arr.add(new.toString())
-            notes.value = arr
-
-            Log.i("added", notes.value.toString())
-
-            val editor: SharedPreferences.Editor = sharedPreferences.edit()
-            editor.putStringSet("note", notes.value?.toMutableSet()).apply()
-
-
-            Log.i("new", sharedPreferences.getStringSet("note", null).toString())
-
-            return arr
-        } else {
-            var biggest = 0
-            for(note in data) {
-                arr.add(note)
-                if(toNote(note).id > biggest) {
-                    biggest = toNote(note).id
-                }
+            for (i in data!!) {
+                res.add(i.toString())
             }
 
             val new = Note(
-                id = biggest+1,
                 title = "New Note",
                 content = "",
                 time = LocalDate.now().toString(),
                 color = "#FFFFFF"
             )
-
-            arr.add(new.toString())
-            notes.value = arr
-
-            val editor: SharedPreferences.Editor = sharedPreferences.edit()
-            editor.putStringSet("note", notes.value?.toMutableSet()).apply()
-
-            Log.i("added", notes.value?.toMutableSet().toString())
-            Log.i("new", sharedPreferences.getStringSet("note", null).toString())
-
-            return arr
+            noteRepository.insert(new)
+            res.add(new.toString())
+            Log.i("added", _notes.value.toString())
+//            Log.i("new", sharedPreferences.getStringSet("note", null).toString())
         }
+        _notes.value = res
+        return res
     }
 
     fun deleteNotes(id: Int) {
-        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
-        var res : MutableList<String> = mutableListOf()
+//        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
+        val res : MutableList<String> = mutableListOf()
+        viewModelScope.launch {
+            noteRepository.delete(id)
 
-        for(i in data!!) {
-            if(toNote(i).id != id) {
-                res.add(i)
+            val data = noteRepository.getAllNote()?.toMutableList()
+
+            for(i in data!!) {
+                if(i.id != id) {
+                    res.add(i.toString())
+                }
             }
         }
-
-        notes.value = res
-
-        val editor: SharedPreferences.Editor = sharedPreferences.edit()
-        editor.putStringSet("note", notes.value?.toMutableSet()).apply()
+//        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+//        editor.putStringSet("note", notes.value?.toMutableSet()).apply()
+        _notes.value = res
     }
 
     fun getNote(id: Int) {
-        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
+//        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
         lateinit var res : Note
-
-        for(i in data!!) {
-            if(toNote(i).id == id) {
-                res = toNote(i)
-            }
+        viewModelScope.launch {
+            val data = noteRepository.getNote(id)
+            res = data!!
         }
-
-        note.value = res
+        _note.value = res
     }
 
     fun editNote(title: String, content: String, id: Int) {
-        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
-        var res : MutableList<String> = mutableListOf()
+//        var data = sharedPreferences.getStringSet("note", null)?.toMutableList()
+        val res : MutableList<String> = mutableListOf()
+        viewModelScope.launch {
+            noteRepository.update(title, content, id)
 
-        for(i in data!!) {
-            if(toNote(i).id == id) {
-                var note = toNote(i)
-                note.title = title
-                note.content = content
-                res.add(note.toString())
-            } else {
-                res.add(i)
+            val data = noteRepository.getAllNote()?.toMutableList()
+
+            for(i in data!!) {
+                res.add(i.toString())
             }
+//            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+//            editor.putStringSet("note", notes.value?.toMutableSet()).apply()
         }
-
-        notes.value = res
-
-        val editor: SharedPreferences.Editor = sharedPreferences.edit()
-        editor.putStringSet("note", notes.value?.toMutableSet()).apply()
+        _notes.value = res
     }
 
-    class NoteViewModelProvider(private val sharedPreferences: SharedPreferences): ViewModelProvider.Factory {
+    class NoteViewModelProvider(private val noteRepository: NoteRepository): ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if(modelClass.isAssignableFrom(NoteViewModel::class.java)) {
-                return NoteViewModel(sharedPreferences) as T
+                return NoteViewModel(noteRepository) as T
             }
             throw IllegalArgumentException("Invalid viewModel")
         }

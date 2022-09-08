@@ -1,13 +1,23 @@
 package com.example.noteclone.data
 
-import android.util.Log
+import androidx.room.*
 import java.lang.Integer.parseInt
 
+@Entity(tableName = "note")
 data class Note(
-    var id: Int,
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0,
+
+    @ColumnInfo(name = "title")
     var title: String,
+
+    @ColumnInfo(name = "content")
     var content: String,
+
+    @ColumnInfo(name = "time")
     var time: String,
+
+    @ColumnInfo(name = "color")
     var color: String
 ) {
     override fun toString() : String {
@@ -18,7 +28,6 @@ data class Note(
         return res
     }
 }
-
 
 fun toNote(string: String) : Note {
     var split = string.split(",")

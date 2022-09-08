@@ -1,7 +1,5 @@
 package com.example.noteclone.fragment
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -10,11 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
-import com.example.noteclone.MainActivity
-import com.example.noteclone.adapter.NoteAdapter
 import com.example.noteclone.data.Note
+import com.example.noteclone.database.Injection
 import com.example.noteclone.databinding.FragmentNoteBinding
 import com.example.noteclone.viewmodel.NoteViewModel
 import java.lang.Integer.parseInt
@@ -32,10 +27,10 @@ class NoteFragment : Fragment() {
         val view = binding.root
         val args: Int = parseInt(requireArguments().get("Id").toString())
 
-        val sharedPreferences = activity?.getSharedPreferences("notepad", Context.MODE_PRIVATE)!!
+//        val sharedPreferences = activity?.getSharedPreferences("notepad", Context.MODE_PRIVATE)!!
 
         val viewModel : NoteViewModel by viewModels {
-            NoteViewModel.NoteViewModelProvider(sharedPreferences)
+            NoteViewModel.NoteViewModelProvider(Injection.provideNoteRepository(requireContext()))
         }
         binding.viewModel = viewModel
 
